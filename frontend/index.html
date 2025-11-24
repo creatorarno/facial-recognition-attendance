@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-gray-900">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,37 +14,48 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #111827; /* bg-gray-900 */
+            background-color: #111827;
+            /* bg-gray-900 */
         }
+
         /* Custom scrollbar for a more modern look */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
+
         ::-webkit-scrollbar-track {
-            background: #1f2937; /* bg-gray-800 */
+            background: #1f2937;
+            /* bg-gray-800 */
         }
+
         ::-webkit-scrollbar-thumb {
-            background: #4b5563; /* bg-gray-600 */
+            background: #4b5563;
+            /* bg-gray-600 */
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280; /* bg-gray-500 */
+            background: #6b7280;
+            /* bg-gray-500 */
         }
+
         /* Hide spinner from number input */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
+
         input[type=number] {
             -moz-appearance: textfield;
         }
     </style>
 </head>
+
 <body class="h-full text-gray-200">
     <div class="container mx-auto max-w-5xl p-4 md:p-8">
-        
+
         <!-- Header -->
         <header class="mb-8">
             <h1 class="text-4xl font-bold text-white tracking-tight">Facial Recognition Attendance Logger</h1>
@@ -54,13 +66,17 @@
         <div class="mb-6">
             <div class="border-b border-gray-700">
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button id="tab-recognize" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-400 border-indigo-400" aria-current="page">
+                    <button id="tab-recognize"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-400 border-indigo-400"
+                        aria-current="page">
                         Mark Attendance
                     </button>
-                    <button id="tab-enroll" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-500">
+                    <button id="tab-enroll"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-500">
                         Enroll Student
                     </button>
-                    <button id="tab-logs" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-500">
+                    <button id="tab-logs"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-500">
                         View Logs
                     </button>
                 </nav>
@@ -78,9 +94,11 @@
                             <h3 class="text-lg font-semibold text-white">Webcam Feed</h3>
                         </div>
                         <div class="p-4">
-                            <video id="video" autoplay playsinline class="w-full h-auto rounded-md bg-gray-900 aspect-video"></video>
+                            <video id="video" autoplay playsinline
+                                class="w-full h-auto rounded-md bg-gray-900 aspect-video"></video>
                             <canvas id="canvas" class="hidden"></canvas>
-                            <button id="start-webcam" class="mt-4 w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
+                            <button id="start-webcam"
+                                class="mt-4 w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
                                 Start Webcam
                             </button>
                         </div>
@@ -91,7 +109,8 @@
                             <h3 class="text-lg font-semibold text-white">Recognition Status</h3>
                         </div>
                         <div class="p-4">
-                            <p class="text-gray-400 mb-4">The system will automatically detect faces and log attendance once per 30 minutes.</p>
+                            <p class="text-gray-400 mb-4">The system will automatically detect faces and log attendance
+                                once per 30 minutes.</p>
                             <div id="status-message" class="p-4 rounded-lg bg-gray-700 text-center">
                                 <span class="text-gray-400">Waiting for webcam...</span>
                             </div>
@@ -109,17 +128,23 @@
                     <form id="enroll-form" class="p-6 space-y-4">
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-300">Full Name</label>
-                            <input type="text" id="name" name="name" required class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <input type="text" id="name" name="name" required
+                                class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
                         <div>
-                            <label for="enrollment_id" class="block text-sm font-medium text-gray-300">Enrollment ID</label>
-                            <input type="text" id="enrollment_id" name="enrollment_id" required class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="enrollment_id" class="block text-sm font-medium text-gray-300">Enrollment
+                                ID</label>
+                            <input type="text" id="enrollment_id" name="enrollment_id" required
+                                class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
                         <div>
-                            <label for="files" class="block text-sm font-medium text-gray-300">Student Photos (3-5 recommended)</label>
-                            <input type="file" id="files" name="files" required multiple accept="image/jpeg, image/png" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 file:cursor-pointer">
+                            <label for="files" class="block text-sm font-medium text-gray-300">Student Photos (3-5
+                                recommended)</label>
+                            <input type="file" id="files" name="files" required multiple accept="image/jpeg, image/png"
+                                class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 file:cursor-pointer">
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
+                        <button type="submit"
+                            class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
                             Enroll Student
                         </button>
                     </form>
@@ -132,254 +157,477 @@
                 <div class="bg-gray-800 rounded-lg shadow-lg">
                     <div class="p-4 border-b border-gray-700 flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-white">Attendance Log</h3>
-                        <button id="refresh-logs" class="bg-gray-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
+                        <button id="refresh-logs"
+                            class="bg-gray-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
                             Refresh
                         </button>
                     </div>
                     <!-- Filters -->
                     <div class="p-4 flex gap-4">
-                        <input type="text" id="filter-name" placeholder="Filter by name/ID..." class="block w-1/2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <input type="date" id="filter-date" class="block w-1/2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" style="color-scheme: dark;">
+                        <input type="text" id="filter-name" placeholder="Filter by name/ID..."
+                            class="block w-1/2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="date" id="filter-date"
+                            class="block w-1/2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            style="color-scheme: dark;">
                     </div>
                     <div class="overflow-x-auto max-h-[60vh] overflow-y-auto">
                         <table class="min-w-full divide-y divide-gray-700">
                             <thead class="bg-gray-700 sticky top-0">
                                 <tr>
-                                    <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Name</th>
-                                    <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Enrollment ID</th>
-                                    <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Timestamp (UTC)</th>
+                                    <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">Name
+                                    </th>
+                                    <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">
+                                        Enrollment ID</th>
+                                    <th scope="col" class="py-3.5 px-4 text-left text-sm font-semibold text-white">
+                                        Timestamp (UTC)</th>
                                 </tr>
                             </thead>
                             <tbody id="logs-table-body" class="divide-y divide-gray-700 bg-gray-800">
                                 <!-- Logs will be inserted here by JS -->
                                 <tr>
-                                    <td colspan="3" class="px-4 py-4 text-center text-gray-400">Click "Refresh" to load logs...</td>
+                                    <td colspan="3" class="px-4 py-4 text-center text-gray-400">Click "Refresh" to load
+                                        logs...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-        </div>
+                    <!DOCTYPE html>
+                    <html lang="en" class="h-full bg-gray-900">
 
-    </div>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Attendance System</title>
+                        <!-- Tailwind CSS CDN -->
+                        <script src="https://cdn.tailwindcss.com"></script>
+                        <!-- Inter Font -->
+                        <link rel="preconnect" href="https://fonts.googleapis.com">
+                        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+                            rel="stylesheet">
+                        <style>
+                            body {
+                                font-family: 'Inter', sans-serif;
+                                background-color: #111827;
+                                /* bg-gray-900 */
+                            }
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            const tabs = document.querySelectorAll('.tab-btn');
-            const panels = document.querySelectorAll('.tab-panel');
+                            /* Custom scrollbar for a more modern look */
+                            ::-webkit-scrollbar {
+                                width: 8px;
+                                height: 8px;
+                            }
 
-            // --- Tab Navigation ---
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const targetPanel = document.getElementById(tab.id.replace('tab-', 'panel-'));
+                            ::-webkit-scrollbar-track {
+                                background: #1f2937;
+                                /* bg-gray-800 */
+                            }
 
-                    // Deactivate all tabs
-                    tabs.forEach(t => {
-                        t.classList.remove('text-indigo-400', 'border-indigo-400');
-                        t.classList.add('text-gray-400', 'border-transparent', 'hover:text-gray-300', 'hover:border-gray-500');
-                    });
-                    
-                    // Deactivate all panels
-                    panels.forEach(p => p.classList.add('hidden'));
+                            ::-webkit-scrollbar-thumb {
+                                background: #4b5563;
+                                /* bg-gray-600 */
+                                border-radius: 4px;
+                            }
 
-                    // Activate clicked tab
-                    tab.classList.add('text-indigo-400', 'border-indigo-400');
-                    tab.classList.remove('text-gray-400', 'border-transparent', 'hover:text-gray-300', 'hover:border-gray-500');
-                    
-                    // Activate corresponding panel
-                    targetPanel.classList.remove('hidden');
-                });
-            });
+                            ::-webkit-scrollbar-thumb:hover {
+                                background: #6b7280;
+                                /* bg-gray-500 */
+                            }
 
-            // --- API Base URL ---
-            // We are served from the root, so API calls are relative
-            const API_URL = window.location.origin;
+                            /* Hide spinner from number input */
+                            input[type=number]::-webkit-inner-spin-button,
+                            input[type=number]::-webkit-outer-spin-button {
+                                -webkit-appearance: none;
+                                margin: 0;
+                            }
 
-            // --- Enrollment Panel ---
-            const enrollForm = document.getElementById('enroll-form');
-            const enrollStatus = document.getElementById('enroll-status');
+                            input[type=number] {
+                                -moz-appearance: textfield;
+                            }
+                        </style>
+                    </head>
 
-            enrollForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                enrollStatus.textContent = 'Enrolling, please wait...';
-                enrollStatus.className = 'p-4 rounded-lg bg-blue-900 text-blue-200';
+                    <body class="h-full text-gray-200">
+                        <div class="container mx-auto max-w-5xl p-4 md:p-8">
 
-                const formData = new FormData(enrollForm);
-                
-                try {
-                    const response = await fetch(`${API_URL}/enroll`, {
-                        method: 'POST',
-                        body: formData, // No Content-Type header needed; browser sets it
-                    });
+                            <!-- Header -->
+                            <header class="mb-8">
+                                <h1 class="text-4xl font-bold text-white tracking-tight">Facial Recognition Attendance
+                                    Logger</h1>
+                                <p class="text-lg text-gray-400 mt-2">A full-stack college project using FastAPI,
+                                    WebRTC, and MongoDB.</p>
+                            </header>
 
-                    const result = await response.json();
+                            <!-- Tab Navigation -->
+                            <div class="mb-6">
+                                <div class="border-b border-gray-700">
+                                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                        <button id="tab-recognize"
+                                            class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-400 border-indigo-400"
+                                            aria-current="page">
+                                            Mark Attendance
+                                        </button>
+                                        <button id="tab-enroll"
+                                            class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-500">
+                                            Enroll Student
+                                        </button>
+                                        <button id="tab-logs"
+                                            class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-500">
+                                            View Logs
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
 
-                    if (response.ok) {
-                        enrollStatus.textContent = result.message || 'Enrollment successful!';
-                        enrollStatus.className = 'p-4 rounded-lg bg-green-900 text-green-200';
-                        enrollForm.reset();
-                    } else {
-                        throw new Error(result.detail || 'Enrollment failed.');
-                    }
-                } catch (error) {
-                    enrollStatus.textContent = `Error: ${error.message}`;
-                    enrollStatus.className = 'p-4 rounded-lg bg-red-900 text-red-200';
-                }
-            });
+                            <!-- Tab Content -->
+                            <div>
+                                <!-- Mark Attendance Panel -->
+                                <div id="panel-recognize" class="tab-panel">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Webcam Feed -->
+                                        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                                            <div class="p-4 border-b border-gray-700">
+                                                <h3 class="text-lg font-semibold text-white">Webcam Feed</h3>
+                                            </div>
+                                            <div class="p-4">
+                                                <video id="video" autoplay playsinline
+                                                    class="w-full h-auto rounded-md bg-gray-900 aspect-video"></video>
+                                                <canvas id="canvas" class="hidden"></canvas>
+                                                <button id="start-webcam"
+                                                    class="mt-4 w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
+                                                    Start Webcam
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- Recognition Status -->
+                                        <div class="bg-gray-800 rounded-lg shadow-lg">
+                                            <div class="p-4 border-b border-gray-700">
+                                                <h3 class="text-lg font-semibold text-white">Recognition Status</h3>
+                                            </div>
+                                            <div class="p-4">
+                                                <p class="text-gray-400 mb-4">The system will automatically detect faces
+                                                    and log attendance
+                                                    once per 30 minutes.</p>
+                                                <div id="status-message" class="p-4 rounded-lg bg-gray-700 text-center">
+                                                    <span class="text-gray-400">Waiting for webcam...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-            // --- Attendance Panel ---
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('canvas');
-            const context = canvas.getContext('2d');
-            const startWebcamBtn = document.getElementById('start-webcam');
-            const statusMessage = document.getElementById('status-message');
-            let recognitionInterval = null;
-            let stream = null;
+                                <!-- Enroll Student Panel -->
+                                <div id="panel-enroll" class="tab-panel hidden">
+                                    <div class="bg-gray-800 rounded-lg shadow-lg max-w-lg mx-auto">
+                                        <div class="p-4 border-b border-gray-700">
+                                            <h3 class="text-lg font-semibold text-white">Enroll New Student</h3>
+                                        </div>
+                                        <form id="enroll-form" class="p-6 space-y-4">
+                                            <div>
+                                                <label for="name" class="block text-sm font-medium text-gray-300">Full
+                                                    Name</label>
+                                                <input type="text" id="name" name="name" required
+                                                    class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            </div>
+                                            <div>
+                                                <label for="enrollment_id"
+                                                    class="block text-sm font-medium text-gray-300">Enrollment
+                                                    ID</label>
+                                                <input type="text" id="enrollment_id" name="enrollment_id" required
+                                                    class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            </div>
+                                            <div>
+                                                <label for="files"
+                                                    class="block text-sm font-medium text-gray-300">Student Photos (3-5
+                                                    recommended)</label>
+                                                <input type="file" id="files" name="files" required multiple
+                                                    accept="image/jpeg, image/png"
+                                                    class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 file:cursor-pointer">
+                                            </div>
+                                            <button type="submit"
+                                                class="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
+                                                Enroll Student
+                                            </button>
+                                        </form>
+                                        <div id="enroll-status" class="p-4"></div>
+                                    </div>
+                                </div>
 
-            startWebcamBtn.addEventListener('click', async () => {
-                if (stream) {
-                    // Stop webcam
-                    stream.getTracks().forEach(track => track.stop());
-                    video.srcObject = null;
-                    stream = null;
-                    clearInterval(recognitionInterval);
-                    startWebcamBtn.textContent = 'Start Webcam';
-                    startWebcamBtn.classList.remove('bg-red-600', 'hover:bg-red-500');
-                    startWebcamBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-500');
-                    statusMessage.innerHTML = '<span class="text-gray-400">Webcam stopped.</span>';
-                    return;
-                }
+                                <!-- View Logs Panel -->
+                                <div id="panel-logs" class="tab-panel hidden">
+                                    <div class="bg-gray-800 rounded-lg shadow-lg">
+                                        <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                                            <h3 class="text-lg font-semibold text-white">Attendance Log</h3>
+                                            <button id="refresh-logs"
+                                                class="bg-gray-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-150">
+                                                Refresh
+                                            </button>
+                                        </div>
+                                        <!-- Filters -->
+                                        <div class="p-4 flex gap-4">
+                                            <input type="text" id="filter-name" placeholder="Filter by name/ID..."
+                                                class="block w-1/2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <input type="date" id="filter-date"
+                                                class="block w-1/2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                                style="color-scheme: dark;">
+                                        </div>
+                                        <div class="overflow-x-auto max-h-[60vh] overflow-y-auto">
+                                            <table class="min-w-full divide-y divide-gray-700">
+                                                <thead class="bg-gray-700 sticky top-0">
+                                                    <tr>
+                                                        <th scope="col"
+                                                            class="py-3.5 px-4 text-left text-sm font-semibold text-white">
+                                                            Name
+                                                        </th>
+                                                        <th scope="col"
+                                                            class="py-3.5 px-4 text-left text-sm font-semibold text-white">
+                                                            Enrollment ID</th>
+                                                        <th scope="col"
+                                                            class="py-3.5 px-4 text-left text-sm font-semibold text-white">
+                                                            Timestamp (UTC)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="logs-table-body"
+                                                    class="divide-y divide-gray-700 bg-gray-800">
+                                                    <!-- Logs will be inserted here by JS -->
+                                                    <tr>
+                                                        <td colspan="3" class="px-4 py-4 text-center text-gray-400">
+                                                            Click "Refresh" to load
+                                                            logs...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                    video.srcObject = stream;
-                    
-                    video.onloadedmetadata = () => {
-                        // Set canvas dimensions once video is playing
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
+                        </div>
 
-                        // Start recognition loop
-                        recognitionInterval = setInterval(recognizeFace, 2000); // Recognize every 2 seconds
-                        
-                        startWebcamBtn.textContent = 'Stop Webcam';
-                        startWebcamBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
-                        startWebcamBtn.classList.add('bg-red-600', 'hover:bg-red-500');
-                        statusMessage.innerHTML = '<span class="text-gray-400">Looking for faces...</span>';
-                    };
+                        <script>
+                            document.addEventListener('DOMContentLoaded', () => {
 
-                } catch (error) {
-                    console.error('Error starting webcam:', error);
-                    statusMessage.innerHTML = '<span class="text-red-400">Could not start webcam. Please grant permission.</span>';
-                }
-            });
+                                const tabs = document.querySelectorAll('.tab-btn');
+                                const panels = document.querySelectorAll('.tab-panel');
 
-            async function recognizeFace() {
-                if (!stream || video.paused || video.ended) {
-                    return;
-                }
-                
-                // Draw current video frame to hidden canvas
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                // Get frame as base64 JPEG
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                                // --- Tab Navigation ---
+                                tabs.forEach(tab => {
+                                    tab.addEventListener('click', () => {
+                                        const targetPanel = document.getElementById(tab.id.replace('tab-', 'panel-'));
 
-                try {
-                    const response = await fetch(`${API_URL}/recognize`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ image_base64: dataUrl }),
-                    });
+                                        // Deactivate all tabs
+                                        tabs.forEach(t => {
+                                            t.classList.remove('text-indigo-400', 'border-indigo-400');
+                                            t.classList.add('text-gray-400', 'border-transparent', 'hover:text-gray-300', 'hover:border-gray-500');
+                                        });
 
-                    if (!response.ok) {
-                        const err = await response.json();
-                        throw new Error(err.detail || 'Recognition request failed.');
-                    }
+                                        // Deactivate all panels
+                                        panels.forEach(p => p.classList.add('hidden'));
 
-                    const result = await response.json();
-                    
-                    // Update status message
-                    if (result.message.includes('Welcome')) {
-                        // Highlight successful attendance
-                        statusMessage.innerHTML = `<span class="font-medium text-green-400">${result.message}</span>`;
-                    } else if (result.names.length > 0) {
-                        statusMessage.innerHTML = `<span class="font-medium text-white">Detected: ${result.names.join(', ')}</span>`;
-                    } else if (result.message.includes('No faces')) {
-                        statusMessage.innerHTML = '<span class="text-gray-400">Looking for faces...</span>';
-                    } else {
-                        statusMessage.innerHTML = `<span class="text-gray-400">${result.message}</span>`;
-                    }
+                                        // Activate clicked tab
+                                        tab.classList.add('text-indigo-400', 'border-indigo-400');
+                                        tab.classList.remove('text-gray-400', 'border-transparent', 'hover:text-gray-300', 'hover:border-gray-500');
 
-                } catch (error) {
-                    console.error('Recognition error:', error);
-                    // Don't spam the UI on minor network errors, just log it
-                }
-            }
+                                        // Activate corresponding panel
+                                        targetPanel.classList.remove('hidden');
+                                    });
+                                });
 
-            // --- Logs Panel ---
-            const refreshLogsBtn = document.getElementById('refresh-logs');
-            const logsTableBody = document.getElementById('logs-table-body');
-            const filterNameInput = document.getElementById('filter-name');
-            const filterDateInput = document.getElementById('filter-date');
-            let allLogs = [];
+                                // --- API Base URL ---
+                                const API_URL = window.location.origin;
 
-            async function fetchLogs() {
-                try {
-                    logsTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-400">Loading...</td></tr>';
-                    const response = await fetch(`${API_URL}/attendance`);
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch logs.');
-                    }
-                    
-                    allLogs = await response.json();
-                    renderLogs();
+                                // --- Enrollment Panel ---
+                                const enrollForm = document.getElementById('enroll-form');
+                                const enrollStatus = document.getElementById('enroll-status');
 
-                } catch (error) {
-                    logsTableBody.innerHTML = `<tr><td colspan="3" class="px-4 py-4 text-center text-red-400">${error.message}</td></tr>`;
-                }
-            }
-            
-            function renderLogs() {
-                const nameFilter = filterNameInput.value.toLowerCase();
-                const dateFilter = filterDateInput.value; // YYYY-MM-DD
-                
-                const filteredLogs = allLogs.filter(log => {
-                    const nameMatch = log.name.toLowerCase().includes(nameFilter) || log.student_id.toLowerCase().includes(nameFilter);
-                    // Check if timestamp (e.g., "2025-11-12T10:06:30") starts with the date filter
-                    const dateMatch = !dateFilter || log.timestamp.startsWith(dateFilter);
-                    return nameMatch && dateMatch;
-                });
-                
-                if (filteredLogs.length === 0) {
-                    logsTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-400">No logs found.</td></tr>';
-                    return;
-                }
+                                enrollForm.addEventListener('submit', async (e) => {
+                                    e.preventDefault();
+                                    enrollStatus.textContent = 'Enrolling, please wait...';
+                                    enrollStatus.className = 'p-4 rounded-lg bg-blue-900 text-blue-200';
 
-                logsTableBody.innerHTML = filteredLogs.map(log => `
+                                    const formData = new FormData(enrollForm);
+                                    // Backend expects 'student_id', form has 'enrollment_id'
+                                    formData.append('student_id', formData.get('enrollment_id'));
+                                    formData.delete('enrollment_id');
+
+                                    // Backend expects 'image', form has 'files' (multiple)
+                                    // We take the first file for now as backend expects single 'image'
+                                    const files = document.getElementById('files').files;
+                                    if (files.length > 0) {
+                                        formData.append('image', files[0]);
+                                    }
+                                    formData.delete('files');
+
+                                    try {
+                                        const response = await fetch(`${API_URL}/register`, {
+                                            method: 'POST',
+                                            body: formData,
+                                        });
+
+                                        const result = await response.json();
+
+                                        if (response.ok) {
+                                            enrollStatus.textContent = result.message || 'Enrollment successful!';
+                                            enrollStatus.className = 'p-4 rounded-lg bg-green-900 text-green-200';
+                                            enrollForm.reset();
+                                        } else {
+                                            throw new Error(result.detail || 'Enrollment failed.');
+                                        }
+                                    } catch (error) {
+                                        enrollStatus.textContent = `Error: ${error.message}`;
+                                        enrollStatus.className = 'p-4 rounded-lg bg-red-900 text-red-200';
+                                    }
+                                });
+
+                                // --- Attendance Panel ---
+                                const video = document.getElementById('video');
+                                const canvas = document.getElementById('canvas');
+                                const context = canvas.getContext('2d');
+                                const startWebcamBtn = document.getElementById('start-webcam');
+                                const statusMessage = document.getElementById('status-message');
+                                let recognitionInterval = null;
+                                let stream = null;
+
+                                startWebcamBtn.addEventListener('click', async () => {
+                                    if (stream) {
+                                        // Stop webcam
+                                        stream.getTracks().forEach(track => track.stop());
+                                        video.srcObject = null;
+                                        stream = null;
+                                        clearInterval(recognitionInterval);
+                                        startWebcamBtn.textContent = 'Start Webcam';
+                                        startWebcamBtn.classList.remove('bg-red-600', 'hover:bg-red-500');
+                                        startWebcamBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-500');
+                                        statusMessage.innerHTML = '<span class="text-gray-400">Webcam stopped.</span>';
+                                        return;
+                                    }
+
+                                    try {
+                                        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                                        video.srcObject = stream;
+
+                                        video.onloadedmetadata = () => {
+                                            // Set canvas dimensions once video is playing
+                                            canvas.width = video.videoWidth;
+                                            canvas.height = video.videoHeight;
+
+                                            // Start recognition loop
+                                            recognitionInterval = setInterval(recognizeFace, 3000); // Recognize every 3 seconds
+
+                                            startWebcamBtn.textContent = 'Stop Webcam';
+                                            startWebcamBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
+                                            startWebcamBtn.classList.add('bg-red-600', 'hover:bg-red-500');
+                                            statusMessage.innerHTML = '<span class="text-gray-400">Looking for faces...</span>';
+                                        };
+
+                                    } catch (error) {
+                                        console.error('Error starting webcam:', error);
+                                        statusMessage.innerHTML = '<span class="text-red-400">Could not start webcam. Please grant permission.</span>';
+                                    }
+                                });
+
+                                async function recognizeFace() {
+                                    if (!stream || video.paused || video.ended) {
+                                        return;
+                                    }
+
+                                    // Draw current video frame to hidden canvas
+                                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                                    // Get frame as blob to send as file
+                                    canvas.toBlob(async (blob) => {
+                                        if (!blob) return;
+
+                                        const formData = new FormData();
+                                        formData.append('image', blob, 'capture.jpg');
+
+                                        try {
+                                            const response = await fetch(`${API_URL}/mark-attendance`, {
+                                                method: 'POST',
+                                                body: formData,
+                                            });
+
+                                            const result = await response.json();
+
+                                            // Update status message
+                                            if (response.ok && result.success) {
+                                                // Highlight successful attendance
+                                                statusMessage.innerHTML = `<span class="font-medium text-green-400">${result.message}</span>`;
+                                            } else if (response.status === 404) {
+                                                statusMessage.innerHTML = `<span class="text-yellow-400">${result.message || 'Unknown face'}</span>`;
+                                            } else {
+                                                statusMessage.innerHTML = '<span class="text-gray-400">Scanning...</span>';
+                                            }
+
+                                        } catch (error) {
+                                            console.error('Recognition error:', error);
+                                        }
+                                    }, 'image/jpeg', 0.8);
+                                }
+
+                                // --- Logs Panel ---
+                                const refreshLogsBtn = document.getElementById('refresh-logs');
+                                const logsTableBody = document.getElementById('logs-table-body');
+                                const filterNameInput = document.getElementById('filter-name');
+                                const filterDateInput = document.getElementById('filter-date');
+                                let allLogs = [];
+
+                                async function fetchLogs() {
+                                    try {
+                                        logsTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-400">Loading...</td></tr>';
+                                        const response = await fetch(`${API_URL}/attendance`);
+
+                                        if (!response.ok) {
+                                            throw new Error('Failed to fetch logs.');
+                                        }
+
+                                        const data = await response.json();
+                                        allLogs = data.records;
+                                        renderLogs();
+
+                                    } catch (error) {
+                                        logsTableBody.innerHTML = `<tr><td colspan="3" class="px-4 py-4 text-center text-red-400">${error.message}</td></tr>`;
+                                    }
+                                }
+
+                                function renderLogs() {
+                                    const nameFilter = filterNameInput.value.toLowerCase();
+                                    const dateFilter = filterDateInput.value; // YYYY-MM-DD
+
+                                    const filteredLogs = allLogs.filter(log => {
+                                        const nameMatch = log.name.toLowerCase().includes(nameFilter) || log.student_id.toLowerCase().includes(nameFilter);
+                                        // Check if timestamp (e.g., "2025-11-12T10:06:30") starts with the date filter
+                                        const dateMatch = !dateFilter || log.timestamp.startsWith(dateFilter);
+                                        return nameMatch && dateMatch;
+                                    });
+
+                                    if (filteredLogs.length === 0) {
+                                        logsTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-400">No logs found.</td></tr>';
+                                        return;
+                                    }
+
+                                    logsTableBody.innerHTML = filteredLogs.map(log => `
                     <tr class="hover:bg-gray-700/50">
                         <td class="px-4 py-3 text-sm text-white">${log.name}</td>
                         <td class="px-4 py-3 text-sm text-gray-300">${log.student_id}</td>
                         <td class="px-4 py-3 text-sm text-gray-300">${new Date(log.timestamp).toLocaleString()}</td>
                     </tr>
                 `).join('');
-            }
+                                }
 
-            refreshLogsBtn.addEventListener('click', fetchLogs);
-            filterNameInput.addEventListener('input', renderLogs);
-            filterDateInput.addEventListener('input', renderLogs);
+                                refreshLogsBtn.addEventListener('click', fetchLogs);
+                                filterNameInput.addEventListener('input', renderLogs);
+                                filterDateInput.addEventListener('input', renderLogs);
 
-            // Fetch logs on initial load of the panel
-            document.getElementById('tab-logs').addEventListener('click', () => {
-                if (allLogs.length === 0) {
-                    fetchLogs();
-                }
-            }, { once: true }); // Only run this check once
+                                // Fetch logs on initial load of the panel
+                                document.getElementById('tab-logs').addEventListener('click', () => {
+                                    if (allLogs.length === 0) {
+                                        fetchLogs();
+                                    }
+                                }, { once: true }); // Only run this check once
 
-        });
-    </script>
-</body>
-</html>
+                            });
+                        </script>
+                    </body>
+
+                    </html>

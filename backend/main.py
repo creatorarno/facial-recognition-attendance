@@ -1,16 +1,16 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
 import os
 import shutil
 from datetime import datetime
 import json
-from deepface import DeepFace
 import cv2
 import numpy as np
-from pathlib import Path
+import pickle
 
 app = FastAPI()
 
@@ -23,10 +23,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount frontend static files
+if os.path.exists("../frontend"):
+    app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+
 # Directories
 UPLOAD_DIR = "uploaded_faces"
 ATTENDANCE_FILE = "attendance.json"
+MODEL_FILE = "trainer.yml"
+LABELS_FILE = "labels.json"
+STUDENTS_FILE = "students.json"
+
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Face Detection
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 # Models
 class StudentRegistration(BaseModel):
@@ -50,6 +62,16 @@ def save_attendance(records):
     with open(ATTENDANCE_FILE, 'w') as f:
         json.dump(records, f, indent=2)
 
+def load_students():
+    if os.path.exists(STUDENTS_FILE):
+        with open(STUDENTS_FILE, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_students(students):
+    with open(STUDENTS_FILE, 'w') as f:
+        json.dump(students, f, indent=2)
+
 def get_student_image_path(student_id):
     """Get the path to a student's registered image"""
     student_dir = os.path.join(UPLOAD_DIR, student_id)
@@ -70,33 +92,76 @@ def save_image(file_content: bytes, student_id: str, filename: str) -> str:
     
     return filepath
 
-def verify_face_with_deepface(img1_path: str, img2_path: str, threshold: float = 0.6) -> dict:
-    """
-    Verify if two images contain the same person using DeepFace
-    Returns: dict with 'verified' (bool) and 'distance' (float)
-    """
-    try:
-        result = DeepFace.verify(
-            img1_path=img1_path,
-            img2_path=img2_path,
-            model_name='Facenet512',  # Options: VGG-Face, Facenet, Facenet512, OpenFace, DeepFace, DeepID, ArcFace, Dlib
-            detector_backend='opencv',  # Options: opencv, ssd, dlib, mtcnn, retinaface
-            distance_metric='cosine',  # Options: cosine, euclidean, euclidean_l2
-            enforce_detection=True
-        )
+def train_model():
+    """Train the LBPH recognizer on all registered faces"""
+    print("Training model...")
+    faces = []
+    ids = []
+    label_map = {}
+    current_id = 0
+    
+    # Check if we have any students
+    if not os.path.exists(UPLOAD_DIR):
+        print("No upload directory found.")
+        return False
+
+    student_dirs = [d for d in os.listdir(UPLOAD_DIR) if os.path.isdir(os.path.join(UPLOAD_DIR, d))]
+    
+    if not student_dirs:
+        print("No students found.")
+        return False
+
+    for student_id in student_dirs:
+        label_map[str(current_id)] = student_id
+        student_path = os.path.join(UPLOAD_DIR, student_id)
         
-        # Adjust verification based on custom threshold
-        result['verified'] = result['distance'] < threshold
-        return result
+        for filename in os.listdir(student_path):
+            if filename.endswith(('.jpg', '.jpeg', '.png')):
+                img_path = os.path.join(student_path, filename)
+                # Read image in grayscale
+                img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+                if img is None:
+                    continue
+                
+                # Detect faces
+                detected_faces = face_cascade.detectMultiScale(img, scaleFactor=1.1, minNeighbors=5)
+                
+                for (x, y, w, h) in detected_faces:
+                    faces.append(img[y:y+h, x:x+w])
+                    ids.append(current_id)
         
-    except Exception as e:
-        print(f"Face verification error: {str(e)}")
-        return {'verified': False, 'distance': 1.0, 'error': str(e)}
+        current_id += 1
+
+    if len(faces) > 0:
+        recognizer.train(faces, np.array(ids))
+        recognizer.save(MODEL_FILE)
+        with open(LABELS_FILE, 'w') as f:
+            json.dump(label_map, f)
+        print("Model trained successfully.")
+        return True
+    else:
+        print("No faces found to train.")
+        return False
+
+def load_model():
+    """Load the trained model and labels"""
+    if os.path.exists(MODEL_FILE) and os.path.exists(LABELS_FILE):
+        recognizer.read(MODEL_FILE)
+        with open(LABELS_FILE, 'r') as f:
+            label_map = json.load(f)
+        # Convert keys back to int for internal usage if needed, but we look up by int ID
+        return label_map
+    return None
+
+# Initialize model on startup if exists
+load_model()
 
 # API Endpoints
 @app.get("/")
 async def root():
-    return {"message": "Facial Recognition Attendance System API (DeepFace)"}
+    if os.path.exists("../frontend/index.html"):
+        return FileResponse("../frontend/index.html")
+    return {"message": "Facial Recognition Attendance System API (OpenCV LBPH)"}
 
 @app.post("/register")
 async def register_student(
@@ -113,25 +178,28 @@ async def register_student(
         # Read image content
         contents = await image.read()
         
+        # Verify face is detectable before saving
+        nparr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+        faces = face_cascade.detectMultiScale(img, scaleFactor=1.1, minNeighbors=5)
+        
+        if len(faces) == 0:
+             raise HTTPException(status_code=400, detail="No face detected. Please upload a clear photo.")
+        
         # Save image
         filename = f"registered_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
         filepath = save_image(contents, student_id, filename)
         
-        # Verify face is detectable
-        try:
-            # Try to detect face in the image
-            DeepFace.extract_faces(
-                img_path=filepath,
-                detector_backend='opencv',
-                enforce_detection=True
-            )
-        except Exception as e:
-            # Clean up if face detection fails
-            os.remove(filepath)
-            raise HTTPException(
-                status_code=400,
-                detail=f"No face detected in image. Please upload a clear photo. Error: {str(e)}"
-            )
+        # Save student metadata
+        students = load_students()
+        students[student_id] = {
+            "name": name,
+            "registered_at": datetime.now().isoformat()
+        }
+        save_students(students)
+        
+        # Retrain model
+        train_model()
         
         return JSONResponse(content={
             "message": "Student registered successfully",
@@ -153,90 +221,71 @@ async def mark_attendance(image: UploadFile = File(...)):
         if not image.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="File must be an image")
         
-        # Save temporary image
-        temp_dir = "temp"
-        os.makedirs(temp_dir, exist_ok=True)
-        temp_path = os.path.join(temp_dir, f"temp_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
-        
+        # Read image
         contents = await image.read()
-        with open(temp_path, 'wb') as f:
-            f.write(contents)
+        nparr = np.frombuffer(contents, np.uint8)
+        img_gray = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
         
-        # Try to detect face in uploaded image
-        try:
-            DeepFace.extract_faces(
-                img_path=temp_path,
-                detector_backend='opencv',
-                enforce_detection=True
-            )
-        except Exception as e:
-            os.remove(temp_path)
-            raise HTTPException(
-                status_code=400,
-                detail=f"No face detected in uploaded image. Error: {str(e)}"
-            )
+        # Detect face
+        faces = face_cascade.detectMultiScale(img_gray, scaleFactor=1.1, minNeighbors=5)
         
-        # Get all registered students
-        if not os.path.exists(UPLOAD_DIR):
-            os.remove(temp_path)
-            raise HTTPException(status_code=404, detail="No students registered yet")
+        if len(faces) == 0:
+            raise HTTPException(status_code=400, detail="No face detected in uploaded image")
         
-        student_dirs = [d for d in os.listdir(UPLOAD_DIR) 
-                       if os.path.isdir(os.path.join(UPLOAD_DIR, d))]
+        # Load model and labels
+        label_map = load_model()
+        if not label_map:
+             raise HTTPException(status_code=400, detail="System not trained yet. Please register students first.")
         
-        if not student_dirs:
-            os.remove(temp_path)
-            raise HTTPException(status_code=404, detail="No students registered yet")
+        # Predict
+        # We take the largest face if multiple
+        (x, y, w, h) = max(faces, key=lambda f: f[2] * f[3])
+        roi_gray = img_gray[y:y+h, x:x+w]
         
-        # Try to match with each registered student
-        best_match = None
-        best_distance = float('inf')
+        label_id, confidence = recognizer.predict(roi_gray)
         
-        for student_id in student_dirs:
-            registered_image = get_student_image_path(student_id)
-            if not registered_image:
-                continue
-            
-            result = verify_face_with_deepface(temp_path, registered_image)
-            
-            if result['verified'] and result['distance'] < best_distance:
-                best_distance = result['distance']
-                best_match = student_id
+        # Confidence in LBPH is distance: 0 is perfect match.
+        # Usually < 50 is good, < 80 is acceptable.
+        # We'll use a threshold of 70 for now.
+        THRESHOLD = 70
         
-        # Clean up temp file
-        os.remove(temp_path)
-        
-        if best_match:
-            # Load attendance records
-            records = load_attendance()
-            
-            # Create attendance record
-            timestamp = datetime.now().isoformat()
-            attendance_record = {
-                "student_id": best_match,
-                "timestamp": timestamp,
-                "confidence": float(1 - best_distance),  # Convert distance to confidence
-                "verified": True
-            }
-            
-            records.append(attendance_record)
-            save_attendance(records)
-            
-            return JSONResponse(content={
-                "success": True,
-                "student_id": best_match,
-                "timestamp": timestamp,
-                "confidence": float(1 - best_distance),
-                "message": f"Attendance marked for student {best_match}"
-            })
-        else:
-            return JSONResponse(
-                status_code=404,
-                content={
-                    "success": False,
-                    "message": "No matching student found. Please register first."
+        if confidence < THRESHOLD:
+            student_id = label_map.get(str(label_id))
+            if student_id:
+                # Get student name
+                students = load_students()
+                student_name = students.get(student_id, {}).get("name", f"Student {student_id}")
+                
+                # Log attendance
+                records = load_attendance()
+                timestamp = datetime.now().isoformat()
+                
+                attendance_record = {
+                    "student_id": student_id,
+                    "timestamp": timestamp,
+                    "confidence": float(confidence), # Lower is better
+                    "verified": True,
+                    "name": student_name
                 }
-            )
+                
+                records.append(attendance_record)
+                save_attendance(records)
+                
+                return JSONResponse(content={
+                    "success": True,
+                    "student_id": student_id,
+                    "timestamp": timestamp,
+                    "confidence": float(confidence),
+                    "message": f"Welcome, {student_name}!"
+                })
+        
+        return JSONResponse(
+            status_code=404,
+            content={
+                "success": False,
+                "message": "Face not recognized. Please register first or try again."
+            }
+        )
             
     except HTTPException:
         raise
@@ -259,6 +308,7 @@ async def get_students():
         if not os.path.exists(UPLOAD_DIR):
             return JSONResponse(content={"students": [], "total": 0})
         
+        students_data = load_students()
         student_dirs = [d for d in os.listdir(UPLOAD_DIR) 
                        if os.path.isdir(os.path.join(UPLOAD_DIR, d))]
         
@@ -266,12 +316,14 @@ async def get_students():
         for student_id in student_dirs:
             image_path = get_student_image_path(student_id)
             if image_path:
+                student_info = students_data.get(student_id, {})
                 students.append({
                     "student_id": student_id,
+                    "name": student_info.get("name", "Unknown"),
                     "image_path": image_path,
-                    "registered_date": datetime.fromtimestamp(
+                    "registered_date": student_info.get("registered_at", datetime.fromtimestamp(
                         os.path.getctime(image_path)
-                    ).isoformat()
+                    ).isoformat())
                 })
         
         return JSONResponse(content={"students": students, "total": len(students)})
@@ -285,6 +337,8 @@ async def delete_student(student_id: str):
         student_dir = os.path.join(UPLOAD_DIR, student_id)
         if os.path.exists(student_dir):
             shutil.rmtree(student_dir)
+            # Retrain model after deletion
+            train_model()
             return JSONResponse(content={
                 "success": True,
                 "message": f"Student {student_id} deleted successfully"

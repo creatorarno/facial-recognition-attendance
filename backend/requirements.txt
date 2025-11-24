@@ -1,8 +1,6 @@
 fastapi
-uvicorn[standard]
+uvicorn
 python-multipart
-pymongo
-numpy==2.2.4
-face_recognition
-Pillow
-python-dotenv
+opencv-contrib-python
+numpy
+requests
