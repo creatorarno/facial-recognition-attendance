@@ -11,6 +11,7 @@ import json
 import cv2
 import numpy as np
 import pickle
+from database import db, fix_id
 
 app = FastAPI()
 
@@ -29,10 +30,8 @@ if os.path.exists("../frontend"):
 
 # Directories
 UPLOAD_DIR = "uploaded_faces"
-ATTENDANCE_FILE = "attendance.json"
 MODEL_FILE = "trainer.yml"
 LABELS_FILE = "labels.json"
-STUDENTS_FILE = "students.json"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -51,27 +50,16 @@ class AttendanceRecord(BaseModel):
     timestamp: str
     image_path: str
 
+# Database Connection Events
+@app.on_event("startup")
+async def startup_db_client():
+    db.connect()
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    db.close()
+
 # Helper functions
-def load_attendance():
-    if os.path.exists(ATTENDANCE_FILE):
-        with open(ATTENDANCE_FILE, 'r') as f:
-            return json.load(f)
-    return []
-
-def save_attendance(records):
-    with open(ATTENDANCE_FILE, 'w') as f:
-        json.dump(records, f, indent=2)
-
-def load_students():
-    if os.path.exists(STUDENTS_FILE):
-        with open(STUDENTS_FILE, 'r') as f:
-            return json.load(f)
-    return {}
-
-def save_students(students):
-    with open(STUDENTS_FILE, 'w') as f:
-        json.dump(students, f, indent=2)
-
 def get_student_image_path(student_id):
     """Get the path to a student's registered image"""
     student_dir = os.path.join(UPLOAD_DIR, student_id)
@@ -191,12 +179,12 @@ async def register_student(
         filepath = save_image(contents, student_id, filename)
         
         # Save student metadata
-        students = load_students()
-        students[student_id] = {
+        student_data = {
+            "student_id": student_id,
             "name": name,
             "registered_at": datetime.now().isoformat()
         }
-        save_students(students)
+        await db.save_student(student_data)
         
         # Retrain model
         train_model()
@@ -253,11 +241,10 @@ async def mark_attendance(image: UploadFile = File(...)):
             student_id = label_map.get(str(label_id))
             if student_id:
                 # Get student name
-                students = load_students()
-                student_name = students.get(student_id, {}).get("name", f"Student {student_id}")
+                student = await db.get_student(student_id)
+                student_name = student.get("name", f"Student {student_id}") if student else f"Student {student_id}"
                 
                 # Log attendance
-                records = load_attendance()
                 timestamp = datetime.now().isoformat()
                 
                 attendance_record = {
@@ -268,8 +255,7 @@ async def mark_attendance(image: UploadFile = File(...)):
                     "name": student_name
                 }
                 
-                records.append(attendance_record)
-                save_attendance(records)
+                await db.save_attendance(attendance_record)
                 
                 return JSONResponse(content={
                     "success": True,
@@ -296,7 +282,8 @@ async def mark_attendance(image: UploadFile = File(...)):
 async def get_attendance():
     """Get all attendance records"""
     try:
-        records = load_attendance()
+        records = await db.get_attendance()
+        records = [fix_id(r) for r in records]
         return JSONResponse(content={"records": records, "total": len(records)})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch attendance: {str(e)}")
@@ -308,7 +295,10 @@ async def get_students():
         if not os.path.exists(UPLOAD_DIR):
             return JSONResponse(content={"students": [], "total": 0})
         
-        students_data = load_students()
+        students_list = await db.get_all_students()
+        # Create a map for easy lookup
+        students_data = {s["student_id"]: s for s in students_list}
+        
         student_dirs = [d for d in os.listdir(UPLOAD_DIR) 
                        if os.path.isdir(os.path.join(UPLOAD_DIR, d))]
         
@@ -337,6 +327,7 @@ async def delete_student(student_id: str):
         student_dir = os.path.join(UPLOAD_DIR, student_id)
         if os.path.exists(student_dir):
             shutil.rmtree(student_dir)
+            await db.delete_student(student_id)
             # Retrain model after deletion
             train_model()
             return JSONResponse(content={
@@ -354,7 +345,7 @@ async def delete_student(student_id: str):
 async def clear_attendance():
     """Clear all attendance records"""
     try:
-        save_attendance([])
+        await db.clear_attendance()
         return JSONResponse(content={
             "success": True,
             "message": "All attendance records cleared"
