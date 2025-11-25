@@ -243,5 +243,12 @@
     "confidence": 60.587672561084375,
     "verified": true,
     "name": "Student S25CSEU1058"
+  },
+  {
+    "student_id": "S25CSEU1059",
+    "timestamp": "2025-11-24T22:44:52.754077",
+    "confidence": 62.32516378053892,
+    "verified": true,
+    "name": "Aabid Khan"
   }
 ]
